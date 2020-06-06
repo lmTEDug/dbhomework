@@ -13,7 +13,7 @@ class JWXTStudent:
 
     def __del__(self):
         if self.__islogin:
-            self.db_cursor.close()
+            # self.db_cursor.close()
             self.db_cnt.close()
 
     def login(self, username, password):
@@ -30,12 +30,14 @@ class JWXTStudent:
         except sqlcnt.Error as e:
             if e.errno == 1045:
                 print("用户名或密码错误")
+                return False
             else:
                 raise
         else:
             self.db_cursor = self.db_cnt.cursor()
             self.username = username
             self.__islogin = True
+            return True
 
     def selectCourse(self, course_ids):
         """
@@ -47,12 +49,12 @@ class JWXTStudent:
 
         if self.__islogin is False:
             print("请登录!")
-            return
+            return False
         else:
-            sql = "INSERT INTO SC (sno, cno) VALUES (%s, %s)"
+            sql = f"INSERT INTO SC (sno, cno) VALUES ({self.username}, %s)"
             val=[]
             for course_id in course_ids:
-                val.append((self.username,course_id))
+                val.append((course_id,))
             self.db_cursor.executemany(sql, val)
             self.db_cursor.commit()   
             print("选课成功。")
@@ -64,12 +66,12 @@ class JWXTStudent:
         """
         if self.__islogin is False:
             print("请登录!")
-            return
+            return False
         else:
-            sql = "DELETE FROM SC WHERE sno = %s AND cno = %s"
+            sql = f"DELETE FROM SC WHERE sno = {self.username} AND cno = %s"
             val=[]
             for course_id in course_ids:
-                val.append((self.username,course_id))
+                val.append((course_id,))
             self.db_cursor.executemany(sql, val)
             self.db_cursor.commit()   
             print("撤课成功。")
@@ -82,20 +84,22 @@ class JWXTStudent:
 
         if self.__islogin is False:
             print("请登录!")
-            return
+            return False
         else:
-            if params==None:
-                sql="select * from TC"
-                self.db_cursor.execute(sql)
-                fet=self.db_cursor.fetchall()
-                return fet
-            else:
-                sql="select * from TC WHERE"
+            sql="select * from course_available"
+            if params:
+                sql+=" WHERE "
+                index=0
                 for param in params:
-                    sql+=" AND "+str(param)+" = "+ str(params[param])
-                self.db_cursor.executemany(sql)
-                fet=self.db_cursor.fetchall()
-                return fet
+                    if index:
+                        sql+=" AND "
+                    else:
+                        index=1
+                    sql+=str(param)+" = "+ str(params[param])
+            print("\n\n\n",sql,"\n\n\n")
+            self.db_cursor.execute(sql)
+            fet=self.db_cursor.fetchall()
+            return fet
 
     def queryCourseTable(self, params=None):
         """
@@ -104,21 +108,18 @@ class JWXTStudent:
 
         if self.__islogin is False:
             print("请登录!")
-            return
+            return False
         else:
-            if params==None:
-                sql="select * from course_table WHERE sno = %s"
-                val=(self.username,)
-                self.db_cursor.execute(sql,val)
-                fet=self.db_cursor.fetchall()
-                return fet
-            else:
-                sql="select * from course_table WHERE sno = %s"
+            sql=f"select * from course_table WHERE sno = {self.username}"
+            # val=(self.username,)
+            if params:
                 for param in params:
                     sql+=" AND "+str(param)+" = "+ str(params[param])
-                self.db_cursor.execute(sql)
-                fet=self.db_cursor.fetchall()
-                return fet
+            print("\n\n\n",sql,"\n\n\n")
+            self.db_cursor.execute(sql)
+            fet=self.db_cursor.fetchall()
+            return fet
+
 
     def queryCourseGrade(self, params=None):
         """
@@ -127,21 +128,17 @@ class JWXTStudent:
 
         if self.__islogin is False:
             print("请登录!")
-            return
+            return False
         else:
-            if params==None:
-                sql="select * from course_grade WHERE sno = %s"
-                val=(self.username,)
-                self.db_cursor.execute(sql,val)
-                fet=self.db_cursor.fetchall()
-                return fet
-            else:
-                sql="select * from course_grade WHERE sno = %s"
+            sql=f"select * from course_grade WHERE sno = {self.username}"
+            if params:
                 for param in params:
                     sql+=" AND "+str(param)+" = "+ str(params[param])
-                self.db_cursor.execute(sql)
-                fet=self.db_cursor.fetchall()
-                return fet
+            print("\n\n\n",sql,"\n\n\n")
+            self.db_cursor.execute(sql)
+            fet=self.db_cursor.fetchall()
+            return fet
+
 
 
 class JWXTTeahcer:
