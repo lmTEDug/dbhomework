@@ -39,7 +39,7 @@ class JWXTStudent:
             self.__islogin = True
             return True
 
-    def selectCourse(self, course_ids):
+    def selectCourse(self, course_id):
         """
         学生选课
 
@@ -51,16 +51,26 @@ class JWXTStudent:
             print("请登录!")
             return False
         else:
-            sql = f"INSERT INTO SC (sno, cno) VALUES ({self.username}, %s)"
-            val=[]
-            for course_id in course_ids:
-                val.append((course_id,))
-            self.db_cursor.executemany(sql, val)
-            self.db_cursor.commit()   
-            print("选课成功。")
-            return True
+            sql = f"select * from  course_available WHERE cno = {course_id}"
+            self.db_cursor.execute(sql)
+            fet = self.db_cursor.fetchall()
+            if fet:
+                sql = f"select restno from course_available WHERE cno = {course_id}"
+                restno = (self.db_cursor.fetchall())[0]
+                if restno > 0:
+                    sql = f"update course_available set restno=restno-1 where cno = {course_id}"
+                    self.db_cursor.execute(sql)
+                    sql = f"INSERT INTO SC (sno, cno) VALUES ({self.username}, {course_id})"
+                    self.db_cursor.execute(sql)
+                    self.db_cnt.commit()
+                    print("选课成功。")
+                    return True
+                else:
+                    return False
+            else:
+                return False
 
-    def withdrawCourse(self, course_ids):
+    def withdrawCourse(self, course_id):
         """
         学生撤课, 参数同选课参数
         """
@@ -68,14 +78,19 @@ class JWXTStudent:
             print("请登录!")
             return False
         else:
-            sql = f"DELETE FROM SC WHERE sno = {self.username} AND cno = %s"
-            val=[]
-            for course_id in course_ids:
-                val.append((course_id,))
-            self.db_cursor.executemany(sql, val)
-            self.db_cursor.commit()   
-            print("撤课成功。")
-            return True
+            sql = f"select * from  SC WHERE sno = {self.username} and cno = {course_id}"
+            self.db_cursor.execute(sql)
+            fet = self.db_cursor.fetchall()
+            if fet:
+                sql = f"update course_available set restno=restno+1 where cno = {course_id}"
+                self.db_cursor.execute(sql)
+                sql = f"DELETE FROM SC WHERE sno = {self.username} AND cno = {course_id}"
+                self.db_cursor.executemany(sql)
+                self.db_cnt.commit()
+                print("撤课成功。")
+                return True
+            else:
+                return False
 
     def queryCourseAvailable(self, params=None):
         """
@@ -86,19 +101,19 @@ class JWXTStudent:
             print("请登录!")
             return False
         else:
-            sql="select * from course_available"
+            sql = "select * from course_available"
             if params:
-                sql+=" WHERE "
-                index=0
+                sql += " WHERE "
+                index = 0
                 for param in params:
                     if index:
-                        sql+=" AND "
+                        sql += " AND "
                     else:
-                        index=1
-                    sql+=str(param)+" = "+ str(params[param])
-            print("\n\n\n",sql,"\n\n\n")
+                        index = 1
+                    sql += str(param)+" = '" + str(params[param])+"'"
+            print("\n\n\n", sql, "\n\n\n")
             self.db_cursor.execute(sql)
-            fet=self.db_cursor.fetchall()
+            fet = self.db_cursor.fetchall()
             return fet
 
     def queryCourseTable(self, params=None):
@@ -110,16 +125,15 @@ class JWXTStudent:
             print("请登录!")
             return False
         else:
-            sql=f"select * from course_table WHERE sno = {self.username}"
+            sql = f"select * from course_table WHERE sno = {self.username}"
             # val=(self.username,)
             if params:
                 for param in params:
-                    sql+=" AND "+str(param)+" = "+ str(params[param])
-            print("\n\n\n",sql,"\n\n\n")
+                    sql += " AND "+str(param)+" = '" + str(params[param])+"'"
+            print("\n\n\n", sql, "\n\n\n")
             self.db_cursor.execute(sql)
-            fet=self.db_cursor.fetchall()
+            fet = self.db_cursor.fetchall()
             return fet
-
 
     def queryCourseGrade(self, params=None):
         """
@@ -130,20 +144,43 @@ class JWXTStudent:
             print("请登录!")
             return False
         else:
-            sql=f"select * from course_grade WHERE sno = {self.username}"
+            sql = f"select * from course_grade WHERE sno = {self.username}"
             if params:
                 for param in params:
-                    sql+=" AND "+str(param)+" = "+ str(params[param])
-            print("\n\n\n",sql,"\n\n\n")
+                    sql += " AND "+str(param)+" = '" + str(params[param])+"'"
+            print("\n\n\n", sql, "\n\n\n")
             self.db_cursor.execute(sql)
-            fet=self.db_cursor.fetchall()
+            fet = self.db_cursor.fetchall()
             return fet
 
+    def queryStudentInfo(self):
+        """
+        查询当前登录学生信息
 
+        返回:
+            字典格式, 键对应列名, 值对应相应的值
+        """
+        dit = {}
+        sql = f"select * from Student where sno = {self.username}"
+        self.db_cursor.execute(sql)
+        col_name = [tuple[0] for tuple in self.db_cursor.description]
+        fet = self.db_cursor.fetchall()
+        for i, j in zip(col_name, fet[0]):
+            dit[i] = j
+        return dit
 
-class JWXTTeahcer:
-    pass
+    def updateStudentInfo(self, params):
+        """
+        更新当前登录学生信息
 
+        参数: params字典格式, 更新后的值
 
-class JWXTAdmin:
-    pass
+        返回执行结果
+        """
+        if params:
+            for param in params:
+                sql = f"update Student set {param} = '{params[param]}' where sno = {self.username}"
+                print(sql)
+                self.db_cursor.execute(sql)
+            self.db_cnt.commit()
+        return True

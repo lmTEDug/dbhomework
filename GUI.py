@@ -1,6 +1,8 @@
+import time
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter.messagebox import showinfo
+
 from query import JWXTStudent
 
 
@@ -8,41 +10,40 @@ class JWXT:
     def __init__(self):
         self.user_cnt = JWXTStudent('test')
         self.root = tk.Tk()
-        self.root.title('教务系统')
+        self.root.title('教务系统(学生端)')
         self.root.geometry('960x420')
         self.root.resizable(False, False)
         self.mainloop = self.root.mainloop
 
-        # widgets for login ui
-        self.login_ui = tk.Frame(self.root)  # , bg='lightgreen')
-        self._init_login_ui(self.login_ui)
-        self.login_ui.pack()
+        # login ui and main ui
+        self._init_login_ui(self.root)
+        self._init_main_ui(self.root)
 
-        self._init_main_ui()
-
-        self._init_course_table()
-        self._init_course_available()
-        self._init_course_grade()
+        self._init_course_grade(self.course_grade_ui)
+        self._init_course_table(self.course_table_ui)
+        self._init_course_available(self.course_available_ui)
+        self._init_student_info(self.student_info_ui)
 
     def _init_login_ui(self, master):
+        self.login_ui = tk.Frame(master)  # , bg='lightgreen')
         # login button
-        self.login_btn = tk.Button(master)
+        self.login_btn = tk.Button(self.login_ui)
         self.login_btn['text'] = '登录'
         self.login_btn['command'] = self.login_btn_cmd
 
         # username label
-        self.login_usrn_label = tk.Label(master)
+        self.login_usrn_label = tk.Label(self.login_ui)
         self.login_usrn_label['text'] = '用户名'
 
         # username entry
-        self.login_usrn_entry = tk.Entry(master)
+        self.login_usrn_entry = tk.Entry(self.login_ui)
 
         # password label
-        self.login_pwd_label = tk.Label(master)
+        self.login_pwd_label = tk.Label(self.login_ui)
         self.login_pwd_label['text'] = '密码'
 
         # password entry
-        self.login_pwd_entry = tk.Entry(master, show='*')
+        self.login_pwd_entry = tk.Entry(self.login_ui, show='*')
 
         # login widgets pack
         self.login_usrn_label.grid(row=0, column=0, padx=10, pady=10)
@@ -51,19 +52,23 @@ class JWXT:
         self.login_pwd_entry.grid(row=1, column=1, padx=10, pady=10)
         self.login_btn.grid(row=2, column=1, padx=10, pady=10)
 
-    def _init_main_ui(self):
+        self.login_ui.pack()
+
+    def _init_main_ui(self, master):
         # notebook frame for main ui
-        self.main_ui = ttk.Notebook(self.root, height=540, width=960)
+        self.main_ui = ttk.Notebook(master, height=540, width=960)
         self.course_table_ui = tk.Frame(self.main_ui)  # , bg='lightyellow')
         self.main_ui.add(self.course_table_ui, text='课程表')
         self.course_available_ui = tk.Frame(self.main_ui)  # , bg='lightblue')
         self.main_ui.add(self.course_available_ui, text='选课')
         self.course_grade_ui = tk.Frame(self.main_ui)  # , bg='lightgreen')
         self.main_ui.add(self.course_grade_ui, text='成绩')
+        self.student_info_ui = tk.Frame(self.main_ui)  # , bg='lightblue')
+        self.main_ui.add(self.student_info_ui, text='个人信息')
 
-    def _init_course_grade(self):
+    def _init_course_grade(self, master):
         # course grade
-        self.course_grade_frame1 = tk.Frame(self.course_grade_ui)
+        self.course_grade_frame1 = tk.Frame(master)
         self.course_grade_tab = ttk.Treeview(self.course_grade_frame1, show='headings', height=10)
         self.columns_course_grade = ['cno', 'cname', 'ctype', 'credit', 'dept', 'tname', 'cgrade']
         self.columns_course_grade_cn = ['课程号', '课程名', '课程类型', '学分', '院系', '授课老师', '成绩']
@@ -81,7 +86,7 @@ class JWXT:
         self.course_grade_frame1.pack(side='top', fill='x')
 
         # query frame
-        self.course_grade_frame2 = tk.Frame(self.course_grade_ui, bd=2, relief='groove')
+        self.course_grade_frame2 = tk.Frame(master, bd=2, relief='groove')
         self.course_grade_frame20 = tk.Frame(self.course_grade_frame2)
         self.course_grade_frame21 = tk.Frame(self.course_grade_frame2)
         self.course_grade_label = tk.Label(self.course_grade_frame20, text='筛 选 条 件')
@@ -111,9 +116,9 @@ class JWXT:
         self.course_grade_frame21.grid(row=1, pady=5)
         self.course_grade_frame2.pack(side='top', fill='x')
 
-    def _init_course_table(self):
+    def _init_course_table(self, master):
         # course table
-        self.course_table_frame1 = tk.Frame(self.course_table_ui)
+        self.course_table_frame1 = tk.Frame(master)
         self.course_table_tab = ttk.Treeview(self.course_table_frame1, show='headings', height=10)
         self.columns_course_table = ['cno', 'cname', 'ctype', 'dept', 'tname', 'credit', 'chour', 'ctime', 'cplace']
         self.columns_course_table_cn = ['课程号', '课程名', '课程类型', '院系', '授课老师', '学分', '学时', '上课时间', '上课地点']
@@ -131,7 +136,7 @@ class JWXT:
         self.course_table_frame1.pack(side='top', fill='x')
 
         # query frame
-        self.course_table_frame2 = tk.Frame(self.course_table_ui, bd=2, relief='groove')
+        self.course_table_frame2 = tk.Frame(master, bd=2, relief='groove')
         self.course_table_frame20 = tk.Frame(self.course_table_frame2)
         self.course_table_frame21 = tk.Frame(self.course_table_frame2)
         self.course_table_label = tk.Label(self.course_table_frame20, text='筛 选 条 件')
@@ -167,16 +172,14 @@ class JWXT:
         self.course_table_btn2 = tk.Button(self.course_table_frame3, text='提交')
         self.course_table_btn2['command'] = self.course_table_btn2_cmd
 
-        
-
         self.course_table_label2.grid(row=0, column=0, padx=5, pady=20)
         self.course_table_entry2.grid(row=0, column=1, padx=5, pady=20)
         self.course_table_btn2.grid(row=0, column=2, padx=5, pady=20)
         self.course_table_frame3.pack(side='top', fill='x')
 
-    def _init_course_available(self):
+    def _init_course_available(self, master):
         # course available
-        self.course_available_frame1 = tk.Frame(self.course_available_ui)
+        self.course_available_frame1 = tk.Frame(master)
         self.course_available_tab = ttk.Treeview(self.course_available_frame1, show='headings', height=10)
         self.columns_course_available = ['cno', 'cname', 'ctype', 'dept', 'tname', 'title', 'credit', 'chour', 'ctime', 'cplace', ' restno']
         self.columns_course_available_cn = ['课程号', '课程名', '课程类型', '院系', '授课老师', '职称', '学分', '学时', '上课时间', '上课地点', '剩余人数']
@@ -194,7 +197,7 @@ class JWXT:
         self.course_available_frame1.pack(side='top', fill='x')
 
         # query frame
-        self.course_available_frame2 = tk.Frame(self.course_available_ui, bd=2, relief='groove')
+        self.course_available_frame2 = tk.Frame(master, bd=2, relief='groove')
         self.course_available_frame20 = tk.Frame(self.course_available_frame2)
         self.course_available_frame21 = tk.Frame(self.course_available_frame2)
         self.course_available_label = tk.Label(self.course_available_frame20, text='筛 选 条 件')
@@ -236,6 +239,56 @@ class JWXT:
         self.course_available_entry2.grid(row=0, column=1, padx=5, pady=20)
         self.course_available_btn2.grid(row=0, column=2, padx=5, pady=20)
         self.course_available_frame3.pack(side='top', fill='x')
+
+    def _init_student_info(self, master):
+        self.student_info_frame1 = tk.Frame(master, bd=2, relief='groove')
+        self.student_info_frame2 = tk.Frame(master)
+        self.student_info_frame3 = tk.Frame(master)
+
+        # info 
+        self.student_info_columns = ['sno', 'sname', 'sex', 'birthdate', 'place', 'dept', 'major', 'sgrade']
+        self.student_info_columns_cn = ['学号:', '姓名:', '性别:', '出生日期:', '籍贯:', '院系:', '专业:', '年级:']
+
+        self.student_info_labels = []
+        self.student_info_entrys = []
+
+        for i in self.student_info_columns_cn:
+            self.student_info_labels.append(tk.Label(self.student_info_frame1, text=i))
+            self.student_info_entrys.append(tk.Entry(self.student_info_frame1, state='readonly', width=15))
+
+        tmp1 = 0
+        for i in range(0, 8, 2):
+            tmp2 = 1
+            self.student_info_labels[i].grid(row=tmp1, column=tmp2, padx=15, pady=10)
+            tmp2 += 1
+            self.student_info_entrys[i].grid(row=tmp1, column=tmp2, padx=15, pady=10)
+            tmp2 += 1
+            self.student_info_labels[i+1].grid(row=tmp1, column=tmp2, padx=15, pady=10)
+            tmp2 += 1
+            self.student_info_entrys[i+1].grid(row=tmp1, column=tmp2, padx=15, pady=10)
+            tmp2 += 1
+            tmp1 += 1
+
+        # refresh and change btn
+        self.student_info_btn1 = tk.Button(self.student_info_frame2, text='刷新')
+        self.student_info_btn1['command'] = self.student_info_btn1_cmd
+        self.student_info_btn2 = tk.Button(self.student_info_frame2, text='修改信息')
+        self.student_info_btn2['command'] = self.student_info_btn2_cmd
+
+        self.student_info_btn1.grid(row=0, column=0, padx=15, pady=15)
+        self.student_info_btn2.grid(row=0, column=1, padx=15, pady=15)
+
+        # ok and cancel btn
+        self.student_info_btn3 = tk.Button(self.student_info_frame3, text='确认')
+        self.student_info_btn3['command'] = self.student_info_btn3_cmd
+        self.student_info_btn4 = tk.Button(self.student_info_frame3, text='取消')
+        self.student_info_btn4['command'] = self.student_info_btn4_cmd
+
+        self.student_info_btn3.grid(row=0, column=0, padx=15, pady=15)
+        self.student_info_btn4.grid(row=0, column=1, padx=15, pady=15)
+
+        self.student_info_frame1.pack(side='top')
+        self.student_info_frame2.pack(side='top')
 
     def login_btn_cmd(self):
         username = 'root'  # self.login_usrn_entry.get()
@@ -312,7 +365,7 @@ class JWXT:
             showinfo('提示信息', '请输入需撤课课程号')
 
     def course_available_btn2_cmd(self):
-        course_id = self.course_table_entry2.get()  # type: str
+        course_id = self.course_available_entry2.get()  # type: str
         if course_id:
             if not course_id.isnumeric():
                 showinfo('输入错误', '请输入合法的课程号')
@@ -336,6 +389,72 @@ class JWXT:
     def course_table_btn_cl_cmd(self):
         for i in self.course_table_entrys:
             i.delete(0, 'end')
+
+    def student_info_btn1_cmd(self):
+        """刷新"""
+
+        result = self.user_cnt.queryStudentInfo()
+        # result = {1: 2}
+        if not result:
+            showinfo('提示信息', '数据刷新失败')
+        else:
+            for i, j in zip(self.student_info_columns, self.student_info_entrys):
+                j['state'] = 'normal'
+                j.delete(0, 'end')
+                j.insert(0, result[i])
+                j['state'] = 'readonly'
+
+    def student_info_btn2_cmd(self):
+        """修改信息"""
+
+        for i in self.student_info_entrys[2:5]:
+            i['state'] = 'normal'
+
+        self.student_info_btn1['state'] = 'disabled'
+        self.student_info_btn2['state'] = 'disabled'
+        self.student_info_frame3.pack(side='top')
+        
+    def student_info_btn3_cmd(self):
+        """确认按钮"""
+
+        new_info = {}
+        for i in range(2,5):
+            new_info[self.student_info_columns[i]] =  self.student_info_entrys[i].get()
+
+        # check valid
+        print(new_info)
+        if new_info['sex'] not in {'男', '女'}:
+            showinfo('提示信息', '请输入合法的性别')
+            return 
+        try:
+            time.strptime(new_info['birthdate'], '%Y-%m-%d')
+        except ValueError:
+            showinfo('提示信息', '请输入合法的日期\n格式: YYYY-MM-DD')
+            return
+
+        result = self.user_cnt.updateStudentInfo(new_info)
+
+        if result:
+            for i in self.student_info_entrys[2:5]:
+                i['state'] = 'readonly'
+            self.student_info_btn1['state'] = 'active'
+            self.student_info_btn2['state'] = 'active'
+            self.student_info_frame3.pack_forget()
+            showinfo('提示信息', '提交成功, 请刷新页面查看修改结果')
+        else:
+            showinfo('提示信息', '提交失败, 未知错误')
+
+    def student_info_btn4_cmd(self):
+        """取消按钮"""
+
+        for i in self.student_info_entrys[2:5]:
+            i['state'] = 'readonly'
+        self.student_info_btn1['state'] = 'active'
+        self.student_info_btn2['state'] = 'active'
+        self.student_info_frame3.pack_forget()
+
+        self.student_info_btn1_cmd()
+
 
 a = JWXT()
 a.mainloop()

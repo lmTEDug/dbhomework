@@ -1,4 +1,4 @@
 *.pyc
 .vscode/
-data/
+*.csv
 test*

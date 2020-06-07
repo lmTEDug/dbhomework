@@ -21,9 +21,6 @@ if __name__ == "__main__":
         database='test'
     )
     db_cursor = mydb.cursor()
-    db_cursor.execute('select sname from student;')
-    # db_cursor.
-    db_cursor.execute('select * from student;')
     # 建立表和建立视图直接用命令行跑算了
 
     # TODO: 导入csv数据
