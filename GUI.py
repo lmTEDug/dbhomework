@@ -2,21 +2,24 @@ import time
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter.messagebox import showinfo
+from config import DATABASE
 
 from query import JWXTStudent
 
 
 class JWXT:
     def __init__(self):
-        self.user_cnt = JWXTStudent('test')
+        self.user_cnt = JWXTStudent(db_name=DATABASE)
         self.root = tk.Tk()
         self.root.title('教务系统(学生端)')
-        self.root.geometry('960x420')
+        self.root.geometry('960x440')
         self.root.resizable(False, False)
         self.mainloop = self.root.mainloop
 
         # login ui and main ui
         self._init_login_ui(self.root)
+        self.login_ui.pack()
+
         self._init_main_ui(self.root)
 
         self._init_course_grade(self.course_grade_ui)
@@ -52,19 +55,26 @@ class JWXT:
         self.login_pwd_entry.grid(row=1, column=1, padx=10, pady=10)
         self.login_btn.grid(row=2, column=1, padx=10, pady=10)
 
-        self.login_ui.pack()
-
     def _init_main_ui(self, master):
         # notebook frame for main ui
-        self.main_ui = ttk.Notebook(master, height=540, width=960)
-        self.course_table_ui = tk.Frame(self.main_ui)  # , bg='lightyellow')
-        self.main_ui.add(self.course_table_ui, text='课程表')
-        self.course_available_ui = tk.Frame(self.main_ui)  # , bg='lightblue')
-        self.main_ui.add(self.course_available_ui, text='选课')
-        self.course_grade_ui = tk.Frame(self.main_ui)  # , bg='lightgreen')
-        self.main_ui.add(self.course_grade_ui, text='成绩')
-        self.student_info_ui = tk.Frame(self.main_ui)  # , bg='lightblue')
-        self.main_ui.add(self.student_info_ui, text='个人信息')
+        self.main_ui = tk.Frame(master)
+
+        self.main_ui_notebook = ttk.Notebook(self.main_ui, height=385)
+        self.course_table_ui = tk.Frame(self.main_ui_notebook)  # , bg='lightyellow')
+        self.main_ui_notebook.add(self.course_table_ui, text='课程表')
+        self.course_available_ui = tk.Frame(self.main_ui_notebook)  # , bg='lightblue')
+        self.main_ui_notebook.add(self.course_available_ui, text='选课')
+        self.course_grade_ui = tk.Frame(self.main_ui_notebook)  # , bg='lightgreen')
+        self.main_ui_notebook.add(self.course_grade_ui, text='成绩')
+        self.student_info_ui = tk.Frame(self.main_ui_notebook)  # , bg='lightblue')
+        self.main_ui_notebook.add(self.student_info_ui, text='个人信息')
+        self.main_ui_notebook.bind('<<NotebookTabChanged>>', self.main_ui_tab_change_cmd)
+        self.main_ui_notebook.pack(side='top', fill='x')
+
+        # logout btn
+        self.logout_btn = tk.Button(self.main_ui, text='退出登录', bd=0)
+        self.logout_btn['command'] = self.logout_btn_cmd
+        self.logout_btn.pack(anchor='se')
 
     def _init_course_grade(self, master):
         # course grade
@@ -245,7 +255,7 @@ class JWXT:
         self.student_info_frame2 = tk.Frame(master)
         self.student_info_frame3 = tk.Frame(master)
 
-        # info 
+        # info
         self.student_info_columns = ['sno', 'sname', 'sex', 'birthdate', 'place', 'dept', 'major', 'sgrade']
         self.student_info_columns_cn = ['学号:', '姓名:', '性别:', '出生日期:', '籍贯:', '院系:', '专业:', '年级:']
 
@@ -291,13 +301,20 @@ class JWXT:
         self.student_info_frame2.pack(side='top')
 
     def login_btn_cmd(self):
-        username = 'root'  # self.login_usrn_entry.get()
-        password = '123456'  # self.login_pwd_entry.get()
+        username = self.login_usrn_entry.get()
+        password = self.login_pwd_entry.get()
         if not self.user_cnt.login(username, password):
             showinfo('登陆失败', '用户名或密码错误')
         else:
-            self.login_ui.destroy()
+            self.login_pwd_entry.delete(0, 'end')
+            self.login_ui.forget()
             self.main_ui.pack(fill='both')
+            self.main_ui_tab_change_cmd()
+
+    def logout_btn_cmd(self):
+        self.user_cnt.logout()
+        self.main_ui.forget()
+        self.login_ui.pack()
 
     def course_table_btn_cmd(self):
         # query
@@ -370,7 +387,7 @@ class JWXT:
             if not course_id.isnumeric():
                 showinfo('输入错误', '请输入合法的课程号')
             else:
-                result = self.user_cnt.withdrawCourse(course_id)
+                result = self.user_cnt.selectCourse(course_id)
                 if result:
                     showinfo('提示信息', '提交成功, 请刷新课程表查看是否选课')
                 else:
@@ -394,6 +411,7 @@ class JWXT:
         """刷新"""
 
         result = self.user_cnt.queryStudentInfo()
+        # print(result)
         # result = {1: 2}
         if not result:
             showinfo('提示信息', '数据刷新失败')
@@ -413,19 +431,19 @@ class JWXT:
         self.student_info_btn1['state'] = 'disabled'
         self.student_info_btn2['state'] = 'disabled'
         self.student_info_frame3.pack(side='top')
-        
+
     def student_info_btn3_cmd(self):
         """确认按钮"""
 
         new_info = {}
-        for i in range(2,5):
-            new_info[self.student_info_columns[i]] =  self.student_info_entrys[i].get()
+        for i in range(2, 5):
+            new_info[self.student_info_columns[i]] = self.student_info_entrys[i].get()
 
         # check valid
-        print(new_info)
+        # print(new_info)
         if new_info['sex'] not in {'男', '女'}:
             showinfo('提示信息', '请输入合法的性别')
-            return 
+            return
         try:
             time.strptime(new_info['birthdate'], '%Y-%m-%d')
         except ValueError:
@@ -455,6 +473,14 @@ class JWXT:
 
         self.student_info_btn1_cmd()
 
+    def main_ui_tab_change_cmd(self, *args):
+        events = [
+            self.course_table_btn_cmd,
+            self.course_available_btn_cmd,
+            self.course_grade_btn_cmd,
+            self.student_info_btn1_cmd
+        ]
+        if self.user_cnt.islogin:
+            index = self.main_ui_notebook.index(self.main_ui_notebook.select())
+            events[index]()
 
-a = JWXT()
-a.mainloop()

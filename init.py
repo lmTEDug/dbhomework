@@ -1,30 +1,123 @@
 import mysql.connector
 import os
 import csv
+import json
+from config import *
 
 
 def readSqlFile(filepath):
     with open(filepath, encoding='utf8') as f:
-        tmp_commands = f.read().replace('\n', '').split(';')
-
+        tmp_commands = f.read().replace('\n', '').strip(';').split(';')
     sql_commands = [i+';' for i in tmp_commands]
-    print(sql_commands)
     return sql_commands
 
 
 if __name__ == "__main__":
     # 连接数据库并且得到游标
     mydb = mysql.connector.connect(
-        host='localhost',
-        user='root',
-        passwd='123456',
-        database='test'
+        host=HOST,
+        port=PORT,
+        user=SUPERUSERNAME,
+        passwd=SUPERPASSWROD,
+        database=DATABASE
     )
     db_cursor = mydb.cursor()
+
     # 建立表和建立视图直接用命令行跑算了
 
-    # TODO: 导入csv数据
-    # 这里就是用INSERT语句把数据批量导入, 当然也可以手动敲几条数据算了
+    # # create database
+    # db_cursor.execute(
+    #     f"CREATE DATABASE {DATABASE};"
+    # )
+    # mydb.commit()
+    # db_cursor.execute(
+    #     f"USE {DATABASE};"
+    # )
+    # mydb.commit()
+
+    # # create users
+    # with open('./data/user.csv', encoding='utf8') as f:
+    #     csv_reader = csv.reader(f)
+    #     for i in csv_reader:
+    #         if csv_reader.line_num == 1:
+    #             continue
+    #         sql = f"CREATE USER '{i[0]}'@'{HOST}' IDENTIFIED BY '{i[1]}';"
+    #         # sql = f"--DROP USER '{i[0]}'@'{HOST}';"
+    #         print(sql)
+    #         db_cursor.execute(sql)
+    #         sql = f"GRANT SELECT, INSERT, UPDATE, DELETE ON {DATABASE}.* TO '{i[0]}'@'{HOST}';"
+    #         print(sql)
+    #         db_cursor.execute(sql)
+    #         mydb.commit()
+
+    # # create table
+    # sql = readSqlFile('./sql/sql_table.sql')
+    # # print(sql)
+    # for i in sql:
+    #     print(i)
+    #     db_cursor.execute(i)
+
+    # # create view
+    # sql = readSqlFile('./sql/sql_view.sql')
+    # # print(sql)
+    # for i in sql:
+    #     print(i)
+    #     db_cursor.execute(i)
+
+    # # insert course data
+    # with open('./data/course.csv', encoding='utf8') as f:
+    #     csv_reader = csv.reader(f)
+    #     for i in csv_reader:
+    #         if csv_reader.line_num == 1:
+    #             continue
+    #         sql = f"INSERT INTO course VALUES ('{i[0]}', '{i[1]}', '{i[2]}', '{i[3]}', '{i[4]}', '{i[5]}', '{i[6]}', '{i[7]}')"
+    #         print(sql)
+    #         db_cursor.execute(sql)
+    #         mydb.commit()
+
+    # # insert student data
+    # with open('./data/student.csv', encoding='utf8') as f:
+    #     csv_reader = csv.reader(f)
+    #     for i in csv_reader:
+    #         if csv_reader.line_num == 1:
+    #             continue
+    #         sql = f"INSERT INTO student VALUES ('{i[0]}', '{i[1]}', '{i[2]}', '{i[3]}', '{i[4]}', '{i[5]}', '{i[6]}', '{i[7]}')"
+    #         print(sql)
+    #         db_cursor.execute(sql)
+    #         mydb.commit()
+
+    # # insert teacher data
+    # with open('./data/teacher.csv', encoding='utf8') as f:
+    #     csv_reader = csv.reader(f)
+    #     for i in csv_reader:
+    #         if csv_reader.line_num == 1:
+    #             continue
+    #         sql = f"INSERT INTO teacher VALUES ('{i[0]}', '{i[1]}', '{i[2]}', '{i[3]}', '{i[4]}', '{i[5]}', '{i[6]}', '{i[7]}')"
+    #         print(sql)
+    #         db_cursor.execute(sql)
+    #         mydb.commit()
+
+    # # insert TC data
+    # with open('./data/TC.csv', encoding='utf8') as f1:
+    #     csv_reader = csv.reader(f1)
+    #     for i in csv_reader:
+    #         if csv_reader.line_num == 1:
+    #             continue
+    #         sql = f"INSERT INTO TC VALUES ('{i[0]}', '{i[1]}')"
+    #         print(sql)
+    #         db_cursor.execute(sql)
+    #         mydb.commit()
+
+    # # insert SC data
+    # with open('./data/SC.csv', encoding='utf8') as f1:
+    #     csv_reader = csv.reader(f1)
+    #     for i in csv_reader:
+    #         if csv_reader.line_num == 1:
+    #             continue
+    #         sql = f"INSERT INTO SC VALUES ('{i[0]}', '{i[1]}', {i[2]})"
+    #         print(sql)
+    #         db_cursor.execute(sql)
+    #         mydb.commit()
 
     # 关闭连接
     db_cursor.close()
