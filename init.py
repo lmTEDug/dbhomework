@@ -23,14 +23,19 @@ if __name__ == "__main__":
     db_cursor = mydb.cursor()
 
     # create database
-    try:
-        db_cursor.execute(f"CREATE DATABASE {DATABASE};")
-        mydb.commit()
-    except sqlcnt.Error as e:
-        if e.errno == sqlcnt.errorcode.ER_DB_CREATE_EXISTS:
-            pass
+    db_cursor.execute('SHOW DATABASES;')
+    exist_db = db_cursor.fetchall()
+    if (DATABASE,) in exist_db:
+        choose = input(f"数据库'{DATABASE}'已经存在, 是否选择覆盖数据库?(Y/N)[Default:N]")
+        if choose.lower() in ('y', 'yes'):
+            print(f"覆盖原数据库'{DATABASE}'...")
+            db_cursor.execute(f'DROP DATABASE {DATABASE};')
+            db_cursor.execute(f"CREATE DATABASE {DATABASE};")
         else:
-            raise
+            print(f"保留原数据库'{DATABASE}'...")
+    else:
+        db_cursor.execute(f"CREATE DATABASE {DATABASE};")
+    mydb.commit()
     db_cursor.execute(f"USE {DATABASE};")
 
     # create users
@@ -45,7 +50,7 @@ if __name__ == "__main__":
                 db_cursor.execute(sql)
             except sqlcnt.Error as e:
                 if e.errno == sqlcnt.errorcode.ER_CANNOT_USER:
-                    continue
+                    pass
                 else:
                     raise
             sql = f"GRANT SELECT, INSERT, UPDATE, DELETE ON {DATABASE}.* TO '{i[0]}'@'{HOST}';"
