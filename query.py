@@ -32,7 +32,7 @@ class JWXTStudent:
                 passwd=password,
             )
         except sqlcnt.Error as e:
-            if e.errno == 1045:
+            if e.errno == sqlcnt.errorcode.ER_ACCESS_DENIED_ERROR:
                 print("用户名或密码错误")
                 return False
             else:
@@ -62,20 +62,28 @@ class JWXTStudent:
             print("请登录!")
             return False
         else:
-            sql = f"select * from  course_available WHERE cno = {course_id}"
+            sql = f"select * from SC WHERE sno = {self.__username} and cno = {course_id}"
             self.db_cursor.execute(sql)
             fet = self.db_cursor.fetchall()
-            if fet:
-                sql = f"select restno from course_available WHERE cno = {course_id}"
-                restno = (self.db_cursor.fetchall())[0]
-                if restno > 0:
-                    sql = f"update course_available set restno=restno-1 where cno = {course_id}"
+            if not fet:
+                sql = f"select * from course_available WHERE cno = {course_id}"
+                self.db_cursor.execute(sql)
+                fet = self.db_cursor.fetchall()
+                if fet:
+                    sql = f"select restno from course_available WHERE cno = {course_id}"
                     self.db_cursor.execute(sql)
-                    sql = f"INSERT INTO SC (sno, cno) VALUES ({self.__username}, {course_id})"
-                    self.db_cursor.execute(sql)
-                    self.db_cnt.commit()
-                    print("选课成功。")
-                    return True
+                    restno = (self.db_cursor.fetchall())[0][0]
+                    print(restno)
+                    if restno > 0:
+                        sql = f"update course set restno=restno-1 where cno = {course_id}"
+                        self.db_cursor.execute(sql)
+                        sql = f"INSERT INTO SC (sno, cno) VALUES ({self.__username}, {course_id})"
+                        self.db_cursor.execute(sql)
+                        self.db_cnt.commit()
+                        print("选课成功。")
+                        return True
+                    else:
+                        return False
                 else:
                     return False
             else:
@@ -89,14 +97,14 @@ class JWXTStudent:
             print("请登录!")
             return False
         else:
-            sql = f"select * from  SC WHERE sno = {self.__username} and cno = {course_id}"
+            sql = f"select * from SC WHERE sno = {self.__username} and cno = {course_id}"
             self.db_cursor.execute(sql)
             fet = self.db_cursor.fetchall()
             if fet:
-                sql = f"update course_available set restno=restno+1 where cno = {course_id}"
+                sql = f"update course set restno=restno+1 where cno = {course_id}"
                 self.db_cursor.execute(sql)
                 sql = f"DELETE FROM SC WHERE sno = {self.__username} AND cno = {course_id}"
-                self.db_cursor.executemany(sql)
+                self.db_cursor.execute(sql)
                 self.db_cnt.commit()
                 print("撤课成功。")
                 return True
@@ -193,7 +201,7 @@ class JWXTStudent:
         """
         if self.__islogin is False:
             return False
-            
+
         if params:
             for param in params:
                 sql = f"update Student set {param} = '{params[param]}' where sno = {self.__username}"

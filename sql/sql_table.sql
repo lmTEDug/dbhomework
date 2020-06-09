@@ -14,7 +14,7 @@ CREATE TABLE Teacher (
     tno NUMERIC ( 6 ),
     tname VARCHAR ( 10 ) NOT NULL,
     sex VARCHAR ( 2 ),
-    birthdate DATE,
+    birthday DATE,
     place VARCHAR ( 20 ),
     dept VARCHAR ( 20 ),
     degree VARCHAR ( 10 ),
@@ -26,7 +26,7 @@ CREATE TABLE Student (
     sno NUMERIC ( 6 ),
     sname VARCHAR ( 10 ) NOT NULL,
     sex VARCHAR ( 2 ),
-    birthdate DATE,
+    birthday DATE,
     place VARCHAR ( 10 ),
     dept VARCHAR ( 20 ),
     major VARCHAR ( 20 ),
@@ -50,3 +50,4 @@ CREATE TABLE TC (
     FOREIGN KEY ( tno ) REFERENCES Teacher ( tno ),
 PRIMARY KEY ( cno ) 
 );
+

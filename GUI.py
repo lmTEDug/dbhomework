@@ -28,6 +28,8 @@ class JWXT:
         self._init_student_info(self.student_info_ui)
 
     def _init_login_ui(self, master):
+        """初始化登录界面"""
+
         self.login_ui = tk.Frame(master)  # , bg='lightgreen')
         # login button
         self.login_btn = tk.Button(self.login_ui)
@@ -56,6 +58,8 @@ class JWXT:
         self.login_btn.grid(row=2, column=1, padx=10, pady=10)
 
     def _init_main_ui(self, master):
+        """初始化主界面"""
+
         # notebook frame for main ui
         self.main_ui = tk.Frame(master)
 
@@ -77,6 +81,8 @@ class JWXT:
         self.logout_btn.pack(anchor='se')
 
     def _init_course_grade(self, master):
+        """初始化成绩界面"""
+
         # course grade
         self.course_grade_frame1 = tk.Frame(master)
         self.course_grade_tab = ttk.Treeview(self.course_grade_frame1, show='headings', height=10)
@@ -127,6 +133,8 @@ class JWXT:
         self.course_grade_frame2.pack(side='top', fill='x')
 
     def _init_course_table(self, master):
+        """初始化课表界面"""
+
         # course table
         self.course_table_frame1 = tk.Frame(master)
         self.course_table_tab = ttk.Treeview(self.course_table_frame1, show='headings', height=10)
@@ -188,6 +196,8 @@ class JWXT:
         self.course_table_frame3.pack(side='top', fill='x')
 
     def _init_course_available(self, master):
+        """初始化选课界面"""
+
         # course available
         self.course_available_frame1 = tk.Frame(master)
         self.course_available_tab = ttk.Treeview(self.course_available_frame1, show='headings', height=10)
@@ -251,12 +261,14 @@ class JWXT:
         self.course_available_frame3.pack(side='top', fill='x')
 
     def _init_student_info(self, master):
+        """初始化学生信息界面"""
+
         self.student_info_frame1 = tk.Frame(master, bd=2, relief='groove')
         self.student_info_frame2 = tk.Frame(master)
         self.student_info_frame3 = tk.Frame(master)
 
         # info
-        self.student_info_columns = ['sno', 'sname', 'sex', 'birthdate', 'place', 'dept', 'major', 'sgrade']
+        self.student_info_columns = ['sno', 'sname', 'sex', 'birthday', 'place', 'dept', 'major', 'sgrade']
         self.student_info_columns_cn = ['学号:', '姓名:', '性别:', '出生日期:', '籍贯:', '院系:', '专业:', '年级:']
 
         self.student_info_labels = []
@@ -301,6 +313,8 @@ class JWXT:
         self.student_info_frame2.pack(side='top')
 
     def login_btn_cmd(self):
+        """登录按钮"""
+
         username = self.login_usrn_entry.get()
         password = self.login_pwd_entry.get()
         if not self.user_cnt.login(username, password):
@@ -312,11 +326,15 @@ class JWXT:
             self.main_ui_tab_change_cmd()
 
     def logout_btn_cmd(self):
+        """退出登录按钮"""
+
         self.user_cnt.logout()
         self.main_ui.forget()
         self.login_ui.pack()
 
     def course_table_btn_cmd(self):
+        """课表查询按钮"""
+
         # query
         params = {}
         for i, j in zip(self.columns_course_table, self.course_table_entrys):
@@ -334,6 +352,8 @@ class JWXT:
             self.course_table_tab.insert('', index, values=row_data[1:])
 
     def course_available_btn_cmd(self):
+        """选课查询按钮"""
+
         # query
         params = {}
         for i, j in zip(self.columns_course_available, self.course_available_entrys):
@@ -351,6 +371,8 @@ class JWXT:
             self.course_available_tab.insert('', index, values=row_data)
 
     def course_grade_btn_cmd(self):
+        """成绩查询按钮"""
+
         # query
         params = {}
         for i, j in zip(self.columns_course_grade, self.course_grade_entrys):
@@ -368,6 +390,8 @@ class JWXT:
             self.course_grade_tab.insert('', index, values=row_data[1:])
 
     def course_table_btn2_cmd(self):
+        """撤课按钮"""
+
         course_id = self.course_table_entry2.get()  # type: str
         if course_id:
             if not course_id.isnumeric():
@@ -375,13 +399,16 @@ class JWXT:
             else:
                 result = self.user_cnt.withdrawCourse(course_id)
                 if result:
-                    showinfo('提示信息', '提交成功, 请刷新课程表查看是否成功撤课')
+                    self.course_table_btn_cmd()
+                    showinfo('提示信息', '提交成功, 课表已更新')
                 else:
                     showinfo('提示信息', '撤课失败')
         else:
             showinfo('提示信息', '请输入需撤课课程号')
 
     def course_available_btn2_cmd(self):
+        """选课按钮"""
+
         course_id = self.course_available_entry2.get()  # type: str
         if course_id:
             if not course_id.isnumeric():
@@ -389,9 +416,10 @@ class JWXT:
             else:
                 result = self.user_cnt.selectCourse(course_id)
                 if result:
-                    showinfo('提示信息', '提交成功, 请刷新课程表查看是否选课')
+                    self.course_table_btn_cmd()
+                    showinfo('提示信息', '提交成功, 课表已更新')
                 else:
-                    showinfo('提示信息', '撤课失败')
+                    showinfo('提示信息', '选课失败')
         else:
             showinfo('提示信息', '请输入需选课课程号')
 
@@ -408,7 +436,7 @@ class JWXT:
             i.delete(0, 'end')
 
     def student_info_btn1_cmd(self):
-        """刷新"""
+        """个人信息刷新按钮"""
 
         result = self.user_cnt.queryStudentInfo()
         # print(result)
@@ -433,7 +461,7 @@ class JWXT:
         self.student_info_frame3.pack(side='top')
 
     def student_info_btn3_cmd(self):
-        """确认按钮"""
+        """个人信息修改确认按钮"""
 
         new_info = {}
         for i in range(2, 5):
@@ -445,7 +473,7 @@ class JWXT:
             showinfo('提示信息', '请输入合法的性别')
             return
         try:
-            time.strptime(new_info['birthdate'], '%Y-%m-%d')
+            time.strptime(new_info['birthday'], '%Y-%m-%d')
         except ValueError:
             showinfo('提示信息', '请输入合法的日期\n格式: YYYY-MM-DD')
             return
@@ -458,12 +486,12 @@ class JWXT:
             self.student_info_btn1['state'] = 'active'
             self.student_info_btn2['state'] = 'active'
             self.student_info_frame3.pack_forget()
-            showinfo('提示信息', '提交成功, 请刷新页面查看修改结果')
+            showinfo('提示信息', '提交成功, 个人信息已更新')
         else:
             showinfo('提示信息', '提交失败, 未知错误')
 
     def student_info_btn4_cmd(self):
-        """取消按钮"""
+        """个人信息修改取消按钮"""
 
         for i in self.student_info_entrys[2:5]:
             i['state'] = 'readonly'
@@ -474,6 +502,8 @@ class JWXT:
         self.student_info_btn1_cmd()
 
     def main_ui_tab_change_cmd(self, *args):
+        """切换标签事件"""
+
         events = [
             self.course_table_btn_cmd,
             self.course_available_btn_cmd,
