@@ -13,12 +13,13 @@ class JWXT:
         self.root = tk.Tk()
         self.root.title('教务系统(学生端)')
         self.root.geometry('960x440')
+        self.root.iconbitmap('./img/jwxt.ico')
         self.root.resizable(False, False)
         self.mainloop = self.root.mainloop
 
         # login ui and main ui
         self._init_login_ui(self.root)
-        self.login_ui.pack()
+        self.login_ui.place(x=360, y=100)
 
         self._init_main_ui(self.root)
 
@@ -38,7 +39,7 @@ class JWXT:
 
         # username label
         self.login_usrn_label = tk.Label(self.login_ui)
-        self.login_usrn_label['text'] = '用户名'
+        self.login_usrn_label['text'] = '学号'
 
         # username entry
         self.login_usrn_entry = tk.Entry(self.login_ui)
@@ -317,6 +318,10 @@ class JWXT:
 
         username = self.login_usrn_entry.get()
         password = self.login_pwd_entry.get()
+
+        if not username.isnumeric():
+            showinfo('提示信息', '请输入正确的学号')
+            return
         if not self.user_cnt.login(username, password):
             showinfo('登陆失败', '用户名或密码错误')
         else:
@@ -513,4 +518,3 @@ class JWXT:
         if self.user_cnt.islogin:
             index = self.main_ui_notebook.index(self.main_ui_notebook.select())
             events[index]()
-

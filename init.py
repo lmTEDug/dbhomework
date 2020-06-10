@@ -59,7 +59,7 @@ if __name__ == "__main__":
             mydb.commit()
 
     # create table
-    sql = readSqlFile('./sql/sql_table.sql')
+    sql = readSqlFile('./sql/table.sql')
     for i in sql:
         print(i)
         try:
@@ -70,8 +70,20 @@ if __name__ == "__main__":
             else:
                 raise
 
+    # add checks
+    sql = readSqlFile('./sql/constraint.sql')
+    for i in sql:
+        print(i)
+        try:
+            db_cursor.execute(i)
+        except sqlcnt.Error as e:
+            if e.errno == 3822:
+                continue
+            else:
+                raise
+
     # create view
-    sql = readSqlFile('./sql/sql_view.sql')
+    sql = readSqlFile('./sql/view.sql')
     for i in sql:
         print(i)
         try:
